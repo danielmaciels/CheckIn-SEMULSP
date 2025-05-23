@@ -1,0 +1,31 @@
+{
+  "name": "meuprojeto",
+  "license": "0BSD",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~5.0.4",
+    "@react-native-community/datetimepicker": "8.3.0",
+    "@react-native-picker/picker": "^2.11.0",
+    "date-fns": "^4.1.0",
+    "expo": "~53.0.9",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-datepicker": "^8.3.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.2",
+    "react-native-date-picker": "^5.0.12",
+    "react-native-dropdown-picker": "^5.4.6",
+    "react-native-web": "^0.20.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0"
+  },
+  "private": true
+}
