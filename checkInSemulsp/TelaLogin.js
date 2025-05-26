@@ -1,42 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Image } from 'react-native';
-
+import { TextInputMask } from 'react-native-masked-text';
+import Icon from 'react-native-vector-icons/Feather';
 
 export default function TelaLogin({ onLogin, irParaCadastro }) {
   const [cpf, setCpf] = useState('');
   const [senha, setSenha] = useState('');
 
+  const [erros, setErros] = useState({});
+  const [formValido, setFormValido] = useState(false);
+
+  // Função para validar CPF (mesma do seu exemplo)
+  const validarCPF = (cpf) => {
+    cpf = cpf.replace(/[^\d]+/g, '');
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+    let soma = 0;
+    for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
+    let resto = 11 - (soma % 11);
+    let dig1 = resto > 9 ? 0 : resto;
+    if (dig1 !== parseInt(cpf.charAt(9))) return false;
+
+    soma = 0;
+    for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
+    resto = 11 - (soma % 11);
+    let dig2 = resto > 9 ? 0 : resto;
+
+    return dig2 === parseInt(cpf.charAt(10));
+  };
+
+  useEffect(() => {
+    validarCampos();
+  }, [cpf, senha]);
+
+  const validarCampos = () => {
+    const novosErros = {};
+
+    const cpfLimpo = cpf.replace(/[^\d]+/g, '');
+
+    if (!validarCPF(cpfLimpo)) {
+      novosErros.cpf = 'CPF inválido.';
+    }
+    if (senha.length < 4) {
+      novosErros.senha = 'Senha deve ter no mínimo 4 caracteres.';
+    }
+
+    setErros(novosErros);
+    setFormValido(Object.keys(novosErros).length === 0);
+  };
+
+  const renderIcon = (campo) => {
+    if (erros[campo]) return <Icon name="x-circle" size={20} color="red" />;
+    if (!erros[campo] && campo === 'cpf' && cpf.length > 0) return <Icon name="check-circle" size={20} color="green" />;
+    if (!erros[campo] && campo === 'senha' && senha.length > 0) return <Icon name="check-circle" size={20} color="green" />;
+    return null;
+  };
+
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: 'https://scontent.fpll2-1.fna.fbcdn.net/v/t39.30808-6/473423894_1000803965435293_1977731774725976703_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeE0ytsZ3iJrlyebrABL0hEt8VkBG7KEJbLxWQEbsoQlstAnmPu_NneB8rQAOhQruUiZ1baPxpk3X2VDa0Xca3Lw&_nc_ohc=ZBYjJFxYfUAQ7kNvwFPyvDn&_nc_oc=AdlDkhL3Uv5pwoYIlcZut9zh3yoDHC-YRLvjka18FWvFu55FodLwsSvoJyPZxwqEGDY&_nc_zt=23&_nc_ht=scontent.fpll2-1.fna&_nc_gid=KnT-tlHxE4nCGkjCuFNAAA&oh=00_AfKSTxH0OGVssCNz5fl79niChmJXixxpuaGDoT1gizgABg&oe=6835C4B0' }}
-        style={{ width: 120, height: 120, borderRadius: 60, alignSelf: 'center', marginBottom: 30 }}
-        
+        source={{ uri: 'https://scontent.fpll2-1.fna.fbcdn.net/v/t39.30808-6/473423894_1000803965435293_1977731774725976703_n.jpg?...' }}
+        style={styles.image}
       />
       <Text style={styles.title}>Login</Text>
       <Text style={styles.subtitle}>Acesse sua conta para realizar o check-in</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="CPF"
-        placeholderTextColor="#999"
-        value={cpf}
-        onChangeText={setCpf}
-        keyboardType="numeric"
-        maxLength={14}
-      />
+      <View style={styles.inputWrapper}>
+        <TextInputMask
+          style={styles.input}
+          placeholder="CPF"
+          type={'cpf'}
+          placeholderTextColor="#999"
+          value={cpf}
+          onChangeText={setCpf}
+          keyboardType="numeric"
+          maxLength={14}
+        />
+        {renderIcon('cpf')}
+      </View>
+      {erros.cpf && <Text style={styles.erro}>{erros.cpf}</Text>}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        placeholderTextColor="#999"
-        value={senha}
-        onChangeText={setSenha}
-        secureTextEntry
-      />
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={styles.input}
+          placeholder="Senha"
+          placeholderTextColor="#999"
+          value={senha}
+          onChangeText={setSenha}
+          secureTextEntry
+        />
+        {renderIcon('senha')}
+      </View>
+      {erros.senha && <Text style={styles.erro}>{erros.senha}</Text>}
 
-      <TouchableOpacity style={styles.buttonPrimary} onPress={() => onLogin(cpf, senha)}>
+      <TouchableOpacity
+        style={[styles.buttonPrimary, { opacity: formValido ? 1 : 0.6 }]}
+        onPress={() => onLogin(cpf, senha)}
+        disabled={!formValido}
+      >
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
 
@@ -67,19 +129,26 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     textAlign: 'center',
   },
-  input: {
-    height: 50,
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 10,
-    paddingHorizontal: 15,
-    fontSize: 16,
     borderWidth: 1,
     borderColor: '#ddd',
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    marginBottom: 5,
+    paddingHorizontal: 10,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
+  },
+  erro: {
+    color: 'red',
+    fontSize: 13,
+    marginBottom: 10,
+    marginLeft: 5,
   },
   buttonPrimary: {
     backgroundColor: '#00d084',
@@ -98,7 +167,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600',
   },
-  Image: {
+  image: {
     width: 120,
     height: 120,
     borderRadius: 60,
@@ -109,7 +178,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
-  }
+    alignSelf: 'center',
+    marginBottom: 30,
+  },
 });
-
-

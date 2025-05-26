@@ -1,114 +1,176 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, Platform } from 'react-native';
-import DatePicker, { registerLocale } from 'react-datepicker';
-import ptBR from 'date-fns/locale/pt-BR';
-import 'react-datepicker/dist/react-datepicker.css';
-import './datepicker-custom.css';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { MaterialIcons } from '@expo/vector-icons';
 
-registerLocale('pt-BR', ptBR);
-
-export default function TelaCheckin({ usuario, checkIns, onCheckin }) {
+export default function TelaCheckin({ usuario, checkIns, onCheckin, onLogout }) {
   const [local, setLocal] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [data, setData] = useState(new Date());
-  const [horario, setHorario] = useState('09:00');
+  const [data, setData] = useState(null);
+  const [horario, setHorario] = useState(null);
 
-  // Opções de horário das 9h às 15h, de hora em hora
-  const horariosDisponiveis = [
-    '09:00', '15:00',
-  ];
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
-  // Opções locais exemplo
-  const locaisDisponiveis = [
-    'SEMULSP - Compensa'
-  ];
+  const [errorLocal, setErrorLocal] = useState('');
+  const [errorDescricao, setErrorDescricao] = useState('');
+  const [errorData, setErrorData] = useState('');
+  const [errorHorario, setErrorHorario] = useState('');
 
-  // Função para desabilitar sábados e domingos no calendário
-  const isWeekday = date => {
-    const day = date.getDay();
-    return day !== 0 && day !== 6;
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    const day = ('0' + date.getDate()).slice(-2);
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const formatTime = (date) => {
+    if (!date) return '';
+    const hours = ('0' + date.getHours()).slice(-2);
+    const minutes = ('0' + date.getMinutes()).slice(-2);
+    return `${hours}:${minutes}`;
+  };
+
+  useEffect(() => {
+    setErrorLocal(!local.trim() ? 'O local é obrigatório' : '');
+    setErrorDescricao(!descricao.trim() ? 'A descrição é obrigatória' : '');
+    setErrorData(!data ? 'A data é obrigatória' : '');
+    setErrorHorario(!horario ? 'O horário é obrigatório' : '');
+
+    setIsFormValid(
+      local.trim() &&
+      descricao.trim() &&
+      data !== null &&
+      horario !== null
+    );
+  }, [local, descricao, data, horario]);
+
+  const limparCampos = () => {
+    setLocal('');
+    setDescricao('');
+    setData(null);
+    setHorario(null);
+  };
+
+  const handleSubmit = () => {
+    if (!isFormValid) return;
+
+    onCheckin(local.trim(), descricao.trim(), formatDate(data), formatTime(horario));
+    limparCampos();
+  };
+
+  const onChangeDate = (event, selectedDate) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) setData(selectedDate);
+  };
+
+  const onChangeTime = (event, selectedTime) => {
+    setShowTimePicker(Platform.OS === 'ios');
+    if (selectedTime) setHorario(selectedTime);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Olá, {usuario?.nome} 👋</Text>
-      <Text style={styles.subtitle}>Realize seu check-in abaixo</Text>
+      <Text style={styles.welcome}>Bem-vindo(a), {usuario.nome}!</Text>
 
-      <Text style={styles.label}>Local</Text>
-      <select
-        style={styles.select}
-        value={local}
-        onChange={(e) => setLocal(e.target.value)}
-      >
-        <option value="">Selecione um local</option>
-        {locaisDisponiveis.map(loc => (
-          <option key={loc} value={loc}>{loc}</option>
-        ))}
-      </select>
+      <Text style={styles.label}>Escolha o local:</Text>
+      <View style={styles.locationButtons}>
+        <TouchableOpacity
+          style={[styles.locationButton, local === 'Compensa-AM' && styles.selectedButton]}
+          onPress={() => {
+            setLocal('Compensa-AM');
+            setDescricao('Visita nas exposições');
+          }}
+        >
+          <MaterialIcons name="location-on" size={24} color="#fff" />
+          <Text style={styles.locationText}>Compensa-AM</Text>
+        </TouchableOpacity>
 
-      <Text style={styles.label}>Descrição</Text>
-      <select
-        style={styles.select}
-        value={descricao}
-        onChange={(e) => setDescricao(e.target.value)}
-      >
-        <option value="">Selecione uma descrição</option>
-        <option value="Visita educativa">Visita educativa</option>
-      </select>
-
-      <Text style={styles.label}>Data (Segunda a Sexta)</Text>
-      <DatePicker
-        locale="pt-BR"
-        selected={data}
-        onChange={(date) => setData(date)}
-        filterDate={isWeekday}
-        dateFormat="dd/MM/yyyy"
-        className="react-datepicker"
-      />
-
-      <Text style={styles.label}>Horário</Text>
-      <select
-        style={styles.select}
-        value={horario}
-        onChange={(e) => setHorario(e.target.value)}
-      >
-        {horariosDisponiveis.map(h => (
-          <option key={h} value={h}>{h}</option>
-        ))}
-      </select>
+        <TouchableOpacity
+          style={[styles.locationButton, local === 'Alvorada-AM' && styles.selectedButton]}
+          onPress={() => {
+            setLocal('Alvorada-AM');
+            setDescricao('Visita nas exposições');
+          }}
+        >
+          <MaterialIcons name="location-on" size={24} color="#fff" />
+          <Text style={styles.locationText}>Alvorada-AM</Text>
+        </TouchableOpacity>
+      </View>
+      {!!errorLocal && <Text style={styles.errorText}>{errorLocal}</Text>}
 
       <TouchableOpacity
-        style={styles.button}
-        onPress={() => {
-          if (!local || !descricao || !data || !horario) {
-            alert('Preencha todos os campos do check-in.');
-            return;
-          }
+        style={[styles.input, errorData ? styles.inputError : null, styles.datePickerButton]}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={{ color: data ? '#000' : '#888' }}>
+          {data ? formatDate(data) : 'Escolha a data'}
+        </Text>
+      </TouchableOpacity>
+      {!!errorData && <Text style={styles.errorText}>{errorData}</Text>}
 
-          onCheckin(local, descricao, data.toLocaleString(), horario);
-          setLocal('');
-          setDescricao('');
-          setData(new Date());
-          setHorario('09:00');
-        }}
+      <TouchableOpacity
+        style={[styles.input, errorHorario ? styles.inputError : null, styles.datePickerButton]}
+        onPress={() => setShowTimePicker(true)}
+      >
+        <Text style={{ color: horario ? '#000' : '#888' }}>
+          {horario ? formatTime(horario) : 'Escolha o horário'}
+        </Text>
+      </TouchableOpacity>
+      {!!errorHorario && <Text style={styles.errorText}>{errorHorario}</Text>}
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={data || new Date()}
+          mode="date"
+          display="default"
+          onChange={onChangeDate}
+          minimumDate={new Date()}
+        />
+      )}
+
+      {showTimePicker && (
+        <DateTimePicker
+          value={horario || new Date()}
+          mode="time"
+          display="default"
+          onChange={onChangeTime}
+        />
+      )}
+
+      <TouchableOpacity
+        style={[styles.buttonCheckin, !isFormValid && styles.buttonDisabled]}
+        onPress={handleSubmit}
+        disabled={!isFormValid}
       >
         <Text style={styles.buttonText}>Fazer Check-in</Text>
       </TouchableOpacity>
 
-      <Text style={styles.sectionTitle}>Meus check-ins</Text>
+      <TouchableOpacity style={styles.buttonLogout} onPress={onLogout}>
+        <Text style={styles.buttonText}>Sair</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.titleCheckins}>Check-ins realizados:</Text>
 
       <FlatList
-        data={checkIns.filter(c => c.usuario === usuario?.nome)}
+        data={checkIns}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>📍 {item.local}</Text>
-            <Text style={styles.cardText}>📝 {item.descricao}</Text>
-            <Text style={styles.cardText}>📅 {item.data}</Text>
-            <Text style={styles.cardText}>⏰ {item.horario}</Text>
+          <View style={styles.checkinItem}>
+            <Text style={styles.checkinText}>
+              {item.data} às {item.horario} - {item.local}
+            </Text>
+            <Text style={styles.checkinDesc}>{item.descricao}</Text>
           </View>
         )}
-        ListEmptyComponent={<Text style={styles.emptyText}>Nenhum check-in ainda.</Text>}
+        ListEmptyComponent={
+          <Text style={{ textAlign: 'center', marginTop: 20, color: '#fff' }}>
+            Nenhum check-in feito ainda.
+          </Text>
+        }
       />
     </View>
   );
@@ -117,81 +179,103 @@ export default function TelaCheckin({ usuario, checkIns, onCheckin }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    padding: 25,
+    backgroundColor: '#ff6900',
+    padding: 20,
   },
-  title: {
-    fontSize: 26,
+  welcome: {
+    fontSize: 22,
     fontWeight: '700',
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#666',
+    color: '#fff',
     marginBottom: 20,
+    textAlign: 'center',
   },
   label: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 6,
+    color: '#fff',
     fontWeight: '600',
+    marginBottom: 5,
+    marginTop: 10,
   },
-  select: {
-    height: 50,
-    backgroundColor: '#f1f3f5',
+  locationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  locationButton: {
+    backgroundColor: '#f97316',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
+    marginHorizontal: 5,
+  },
+  selectedButton: {
+    backgroundColor: '#fb923c',
+  },
+  locationText: {
+    color: '#fff',
+    fontWeight: '600',
+    marginLeft: 5,
+  },
+  input: {
+    backgroundColor: '#fff',
     borderRadius: 10,
     paddingHorizontal: 15,
-    marginBottom: 12,
+    paddingVertical: 12,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    color: '#333',
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    MozAppearance: 'none',
+    marginBottom: 5,
   },
-  button: {
+  inputError: {
+    borderWidth: 1,
+    borderColor: '#ff4d4d',
+  },
+  errorText: {
+    color: '#ff4d4d',
+    marginBottom: 10,
+    marginLeft: 5,
+  },
+  datePickerButton: {
+    justifyContent: 'center',
+  },
+  buttonCheckin: {
     backgroundColor: '#00d084',
-    paddingVertical: 14,
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: '#82d9b7',
+  },
+  buttonLogout: {
+    backgroundColor: '#9b51e0',
+    paddingVertical: 15,
     borderRadius: 10,
     marginBottom: 20,
   },
   buttonText: {
     color: '#fff',
+    fontWeight: '600',
     fontSize: 17,
     textAlign: 'center',
-    fontWeight: '600',
   },
-  sectionTitle: {
+  titleCheckins: {
     fontSize: 18,
-    fontWeight: '600',
+    color: '#fff',
+    fontWeight: '700',
     marginBottom: 10,
-    marginTop: 10,
-    color: '#444',
   },
-  card: {
-    backgroundColor: '#f0f4ff',
-    padding: 15,
+  checkinItem: {
+    backgroundColor: '#fff',
     borderRadius: 10,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    padding: 12,
+    marginBottom: 8,
   },
-  cardTitle: {
-    fontSize: 16,
+  checkinText: {
     fontWeight: '600',
-    marginBottom: 4,
   },
-  cardText: {
+  checkinDesc: {
     fontSize: 14,
     color: '#555',
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#999',
-    fontSize: 14,
-    marginTop: 20,
   },
 });
