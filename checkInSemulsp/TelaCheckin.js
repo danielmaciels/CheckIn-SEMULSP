@@ -89,16 +89,6 @@ export default function TelaCheckin({ usuario, checkIns, onCheckin, onLogout }) 
           <Text style={styles.locationText}>Compensa-AM</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.locationButton, local === 'Alvorada-AM' && styles.selectedButton]}
-          onPress={() => {
-            setLocal('Alvorada-AM');
-            setDescricao('Visita nas exposições');
-          }}
-        >
-          <MaterialIcons name="location-on" size={24} color="#fff" />
-          <Text style={styles.locationText}>Alvorada-AM</Text>
-        </TouchableOpacity>
       </View>
       {!!errorLocal && <Text style={styles.errorText}>{errorLocal}</Text>}
 
@@ -231,7 +221,7 @@ const styles = StyleSheet.create({
     borderColor: '#ff4d4d',
   },
   errorText: {
-    color: '#ff4d4d',
+    color: '#black',
     marginBottom: 10,
     marginLeft: 5,
   },

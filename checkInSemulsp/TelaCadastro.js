@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { TextInputMask } from 'react-native-masked-text';
-import Icon from 'react-native-vector-icons/Feather';
 import Toast from 'react-native-toast-message';
 
 export default function TelaCadastro({ onCadastro, irParaLogin }) {
@@ -12,8 +11,7 @@ export default function TelaCadastro({ onCadastro, irParaLogin }) {
 
   const [erros, setErros] = useState({});
   const [formValido, setFormValido] = useState(false);
-
-  const valores = { nome, email, cpf, senha };
+  const [clicou, setClicou] = useState(false);
 
   useEffect(() => {
     validarCampos();
@@ -49,14 +47,9 @@ export default function TelaCadastro({ onCadastro, irParaLogin }) {
     setFormValido(Object.keys(novosErros).length === 0);
   };
 
-  const renderIcon = (campo) => {
-    if (erros[campo]) return <Icon name="x-circle" size={20} color="red" />;
-    if (!erros[campo] && valores[campo].length > 0)
-      return <Icon name="check-circle" size={20} color="green" />;
-    return null;
-  };
-
   const handleCadastro = () => {
+    setClicou(true);
+
     if (formValido) {
       onCadastro(nome, email, cpf, senha);
       Toast.show({
@@ -82,9 +75,8 @@ export default function TelaCadastro({ onCadastro, irParaLogin }) {
           value={nome}
           onChangeText={setNome}
         />
-        {renderIcon('nome')}
       </View>
-      {erros.nome && <Text style={styles.erro}>{erros.nome}</Text>}
+      {clicou && erros.nome && <Text style={styles.erro}>{erros.nome}</Text>}
 
       <View style={styles.inputWrapper}>
         <TextInput
@@ -96,9 +88,8 @@ export default function TelaCadastro({ onCadastro, irParaLogin }) {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        {renderIcon('email')}
       </View>
-      {erros.email && <Text style={styles.erro}>{erros.email}</Text>}
+      {clicou && erros.email && <Text style={styles.erro}>{erros.email}</Text>}
 
       <View style={styles.inputWrapper}>
         <TextInputMask
@@ -110,9 +101,8 @@ export default function TelaCadastro({ onCadastro, irParaLogin }) {
           onChangeText={setCpf}
           keyboardType="numeric"
         />
-        {renderIcon('cpf')}
       </View>
-      {erros.cpf && <Text style={styles.erro}>{erros.cpf}</Text>}
+      {clicou && erros.cpf && <Text style={styles.erro}>{erros.cpf}</Text>}
 
       <View style={styles.inputWrapper}>
         <TextInput
@@ -123,9 +113,8 @@ export default function TelaCadastro({ onCadastro, irParaLogin }) {
           onChangeText={setSenha}
           secureTextEntry
         />
-        {renderIcon('senha')}
       </View>
-      {erros.senha && <Text style={styles.erro}>{erros.senha}</Text>}
+      {clicou && erros.senha && <Text style={styles.erro}>{erros.senha}</Text>}
 
       <TouchableOpacity
         style={[styles.buttonPrimary, { opacity: formValido ? 1 : 0.6 }]}
@@ -172,7 +161,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   erro: {
-    color: 'red',
+    color: 'black',
     fontSize: 13,
     marginBottom: 10,
     marginLeft: 5,

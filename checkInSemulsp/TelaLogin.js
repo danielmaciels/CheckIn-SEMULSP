@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { TextInputMask } from 'react-native-masked-text';
-import Icon from 'react-native-vector-icons/Feather';
 
 export default function TelaLogin({ onLogin, irParaCadastro }) {
   const [cpf, setCpf] = useState('');
@@ -11,7 +9,9 @@ export default function TelaLogin({ onLogin, irParaCadastro }) {
   const [erros, setErros] = useState({});
   const [formValido, setFormValido] = useState(false);
 
-  // Função para validar CPF (mesma do seu exemplo)
+  const [cpfTouched, setCpfTouched] = useState(false);
+  const [senhaTouched, setSenhaTouched] = useState(false);
+
   const validarCPF = (cpf) => {
     cpf = cpf.replace(/[^\d]+/g, '');
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
@@ -36,31 +36,19 @@ export default function TelaLogin({ onLogin, irParaCadastro }) {
 
   const validarCampos = () => {
     const novosErros = {};
-
     const cpfLimpo = cpf.replace(/[^\d]+/g, '');
 
-    if (!validarCPF(cpfLimpo)) {
-      novosErros.cpf = 'CPF inválido.';
-    }
-    if (senha.length < 4) {
-      novosErros.senha = 'Senha deve ter no mínimo 4 caracteres.';
-    }
+    if (!validarCPF(cpfLimpo)) novosErros.cpf = 'CPF inválido.';
+    if (senha.length < 4) novosErros.senha = 'Senha deve ter no mínimo 4 caracteres.';
 
     setErros(novosErros);
     setFormValido(Object.keys(novosErros).length === 0);
   };
 
-  const renderIcon = (campo) => {
-    if (erros[campo]) return <Icon name="x-circle" size={20} color="red" />;
-    if (!erros[campo] && campo === 'cpf' && cpf.length > 0) return <Icon name="check-circle" size={20} color="green" />;
-    if (!erros[campo] && campo === 'senha' && senha.length > 0) return <Icon name="check-circle" size={20} color="green" />;
-    return null;
-  };
-
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: 'https://scontent.fpll2-1.fna.fbcdn.net/v/t39.30808-6/473423894_1000803965435293_1977731774725976703_n.jpg?...' }}
+        source={{ uri: 'https://th.bing.com/th/id/OIP.OtQ4c5DzNsxGoLOCCkA2DAHaHa?rs=1&pid=ImgDetMain' }}
         style={styles.image}
       />
       <Text style={styles.title}>Login</Text>
@@ -76,10 +64,10 @@ export default function TelaLogin({ onLogin, irParaCadastro }) {
           onChangeText={setCpf}
           keyboardType="numeric"
           maxLength={14}
+          onBlur={() => setCpfTouched(true)}
         />
-        {renderIcon('cpf')}
       </View>
-      {erros.cpf && <Text style={styles.erro}>{erros.cpf}</Text>}
+      {cpfTouched && erros.cpf && <Text style={styles.erro}>{erros.cpf}</Text>}
 
       <View style={styles.inputWrapper}>
         <TextInput
@@ -89,10 +77,10 @@ export default function TelaLogin({ onLogin, irParaCadastro }) {
           value={senha}
           onChangeText={setSenha}
           secureTextEntry
+          onBlur={() => setSenhaTouched(true)}
         />
-        {renderIcon('senha')}
       </View>
-      {erros.senha && <Text style={styles.erro}>{erros.senha}</Text>}
+      {senhaTouched && erros.senha && <Text style={styles.erro}>{erros.senha}</Text>}
 
       <TouchableOpacity
         style={[styles.buttonPrimary, { opacity: formValido ? 1 : 0.6 }]}
@@ -112,7 +100,7 @@ export default function TelaLogin({ onLogin, irParaCadastro }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ff6900',
+    backgroundColor: '#fe5f2f',
     justifyContent: 'center',
     padding: 30,
   },
@@ -145,7 +133,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   erro: {
-    color: 'red',
+    color: 'black',
     fontSize: 13,
     marginBottom: 10,
     marginLeft: 5,
