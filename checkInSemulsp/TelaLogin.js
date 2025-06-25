@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  Image, ImageBackground,
+} from 'react-native';
 import { TextInputMask } from 'react-native-masked-text';
 
 export default function TelaLogin({ onLogin, irParaCadastro }) {
@@ -46,63 +49,79 @@ export default function TelaLogin({ onLogin, irParaCadastro }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={{ uri: 'https://th.bing.com/th/id/OIP.OtQ4c5DzNsxGoLOCCkA2DAHaHa?rs=1&pid=ImgDetMain' }}
-        style={styles.image}
-      />
-      <Text style={styles.title}>Login</Text>
-      <Text style={styles.subtitle}>Acesse sua conta para realizar o check-in</Text>
+    <ImageBackground
+      source={{ uri: 'https://i.ibb.co/gMj2NhCN/semulsp.png' }}
+      resizeMode="cover"
+      style={styles.background}
+    >
+      <View style={styles.overlay}>
+        <View style={styles.container}>
+          <Image
+            source={{ uri: 'https://scontent.fpll10-1.fna.fbcdn.net/v/t39.30808-6/327159019_1210562372904485_3985593037879299833_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeGR3lO58xVJK4Zb662urSnFNvw_JCQEpmk2_D8kJASmab79dwru1P5vmoL9C44X76tl3kjy2lF3RzoZCiQcd6nd&_nc_ohc=hY5RUcWTFi8Q7kNvwGZm9s4&_nc_oc=Adn7UwirK4MZYM9MasMAg0LvDB1sf_qMUdgZrg5JszAkueWOiOjgdtbcWhBI7NP2XL4anzpLGWBA-3ShSkan5dUi&_nc_zt=23&_nc_ht=scontent.fpll10-1.fna&_nc_gid=Qqb9KqpJr6uzusLts4qdWQ&oh=00_AfO3fz_24vYXREbrrz7PwH7mgtkEg1CXTTJMDPauyqiT_g&oe=685E2A03' }}
+            style={styles.image}
+          />
+          <Text style={styles.title}>Login</Text>
+          <Text style={styles.subtitle}>Acesse sua conta para realizar o check-in</Text>
 
-      <View style={styles.inputWrapper}>
-        <TextInputMask
-          style={styles.input}
-          placeholder="CPF"
-          type={'cpf'}
-          placeholderTextColor="#999"
-          value={cpf}
-          onChangeText={setCpf}
-          keyboardType="numeric"
-          maxLength={14}
-          onBlur={() => setCpfTouched(true)}
-        />
+          <View style={styles.inputWrapper}>
+            <TextInputMask
+              style={styles.input}
+              placeholder="CPF"
+              type={'cpf'}
+              placeholderTextColor="#999"
+              value={cpf}
+              onChangeText={setCpf}
+              keyboardType="numeric"
+              maxLength={14}
+              onBlur={() => setCpfTouched(true)}
+            />
+          </View>
+          {cpfTouched && erros.cpf && <Text style={styles.erro}>{erros.cpf}</Text>}
+
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Senha"
+              placeholderTextColor="#999"
+              value={senha}
+              onChangeText={setSenha}
+              secureTextEntry
+              onBlur={() => setSenhaTouched(true)}
+            />
+          </View>
+          {senhaTouched && erros.senha && <Text style={styles.erro}>{erros.senha}</Text>}
+
+          <TouchableOpacity
+            style={[styles.buttonPrimary, { opacity: formValido ? 1 : 0.6 }]}
+            onPress={() => onLogin(cpf, senha)}
+            disabled={!formValido}
+          >
+            <Text style={styles.buttonText}>Entrar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.buttonSecondary} onPress={irParaCadastro}>
+            <Text style={styles.buttonText}>Criar Conta</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      {cpfTouched && erros.cpf && <Text style={styles.erro}>{erros.cpf}</Text>}
-
-      <View style={styles.inputWrapper}>
-        <TextInput
-          style={styles.input}
-          placeholder="Senha"
-          placeholderTextColor="#999"
-          value={senha}
-          onChangeText={setSenha}
-          secureTextEntry
-          onBlur={() => setSenhaTouched(true)}
-        />
-      </View>
-      {senhaTouched && erros.senha && <Text style={styles.erro}>{erros.senha}</Text>}
-
-      <TouchableOpacity
-        style={[styles.buttonPrimary, { opacity: formValido ? 1 : 0.6 }]}
-        onPress={() => onLogin(cpf, senha)}
-        disabled={!formValido}
-      >
-        <Text style={styles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.buttonSecondary} onPress={irParaCadastro}>
-        <Text style={styles.buttonText}>Criar Conta</Text>
-      </TouchableOpacity>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    backgroundColor: '#fe5f2f',
+    justifyContent: 'center',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)', // mais escuro para imagem clara
     justifyContent: 'center',
     padding: 30,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 28,
@@ -133,7 +152,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   erro: {
-    color: 'black',
+    color: 'white',
     fontSize: 13,
     marginBottom: 10,
     marginLeft: 5,
@@ -156,16 +175,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   image: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: '#ccc',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    resizeMode: 'cover',
     alignSelf: 'center',
     marginBottom: 30,
   },
